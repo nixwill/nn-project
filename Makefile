@@ -1,4 +1,6 @@
-all: download start
+all: setup download start
+
+cpu: setup download start-cpu
 
 # Start notebook server with GPU support
 start:
@@ -19,13 +21,13 @@ start:
 
 # Start notebook server
 start-cpu:
-	docker pull tensorflow/tensorflow:2.0.0-gpu-py3-jupyter
+	docker pull tensorflow/tensorflow:2.0.0-py3-jupyter
 	docker run --rm --interactive --tty \
 		--publish 127.0.0.1:8888:8888 \
 		--publish 127.0.0.1:6006:6006 \
 		--volume $(shell pwd)/:/tf/ \
 		--user $(shell id -u):$(shell id -g) \
-		tensorflow/tensorflow:2.0.0-gpu-py3-jupyter \
+		tensorflow/tensorflow:2.0.0-py3-jupyter \
 		bash -c "source /etc/bash.bashrc \
 			&& jupyter notebook --no-browser --allow-root \
 				--notebook-dir=/tf \
@@ -54,4 +56,7 @@ download: \
 		https://nlp.stanford.edu/projects/nmt/data/wmt15.en-cs/newstest2015.en \
 		https://nlp.stanford.edu/projects/nmt/data/wmt15.en-cs/newstest2015.cs
 
-.PHONY: all download start
+setup:
+	mkdir -p data/ logs/ models/
+
+.PHONY: all cpu setup download start start-cpu
