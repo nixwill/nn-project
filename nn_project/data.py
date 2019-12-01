@@ -32,11 +32,8 @@ def get_data(
 
 
 def get_lines(data, limit=None, offset=None):
-    if offset is None:
-        start = 0
-    else:
-        start = offset
-    stop = start + limit
+    start = 0 if offset is None else offset
+    stop = None if limit is None else start + limit
     lines = [line.strip() for line in itertools.islice(data, start, stop)]
     return lines
 
@@ -50,7 +47,7 @@ def make_vocab(lines, size=None):
     return vocab
 
 
-def get_samples(lines_en, lines_cs, vocab_en, vocab_cs):
+def get_samples(lines_en, lines_cs, vocab_en=None, vocab_cs=None):
     samples_en = [
         list(encode_sample(line=line, vocab=vocab_en))
         for line in lines_en
