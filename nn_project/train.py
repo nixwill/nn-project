@@ -1,0 +1,129 @@
+import datetime
+import math
+
+import tensorflow as tf
+from tensorflow.keras import callbacks
+from tensorflow.keras.metrics import SparseCategoricalAccuracy
+from tensorflow.keras.optimizers import Adam
+
+from nn_project.data import (get_data_generator, get_lengths, get_vocabs,
+    MAX_ROWS_TRAIN)
+from nn_project.model import EncoderDecoder
+
+
+def train(
+        data_limit=None,
+        data_offset=None,
+        validation_split=0.2,
+        vocab_size=None,
+        padding='post',
+        input_embedding_size=200,
+        context_vector_size=2000,
+        output_embedding_size=200,
+        learning_rate=0.001,
+        batch_size=32,
+        epochs=1000,
+        early_stopping=5,
+        queue_size=10,
+):
+    data_offset = data_offset if data_offset is not None else 0
+    data_limit = data_limit if data_limit is not None else MAX_ROWS_TRAIN
+    data_limit = min(data_limit, MAX_ROWS_TRAIN - data_offset)
+    vocab_en, vocab_cs = get_vocabs(
+        kind='train',
+        limit=data_limit,
+        offset=data_offset,
+        vocab_size=vocab_size,
+    )
+    length_en, length_cs = get_lengths(
+        kind='train',
+        limit=data_limit,
+        offset=data_offset,
+    )
+    training_offset = data_offset
+    training_limit = int(data_limit * (1.0 - validation_split))
+    validation_offset = training_offset + training_limit
+    validation_limit = data_limit - training_limit
+    training_data = get_data_generator(
+        kind='train',
+        batch_size=batch_size,
+        limit=training_limit,
+        offset=training_offset,
+        vocab_en=vocab_en,
+        vocab_cs=vocab_cs,
+        length_en=length_en,
+        length_cs=length_cs,
+        padding=padding,
+    )
+    validation_data = get_data_generator(
+        kind='train',
+        batch_size=batch_size,
+        limit=validation_limit,
+        offset=validation_offset,
+        vocab_en=vocab_en,
+        vocab_cs=vocab_cs,
+        length_en=length_en,
+        length_cs=length_cs,
+        padding=padding,
+    )
+    model = EncoderDecoder(
+        input_length=length_en,
+        input_vocab_size=len(vocab_en),
+        input_embedding_size=input_embedding_size,
+        context_vector_size=context_vector_size,
+        output_length=length_cs,
+        output_vocab_size=len(vocab_cs),
+        output_embedding_size=output_embedding_size,
+    )
+    model.compile(
+        optimizer=Adam(learning_rate),
+        loss='sparse_categorical_crossentropy',
+        metrics=[SparseCategoricalAccuracy(name='accuracy')],
+    )
+    steps_per_epoch = math.ceil(training_limit / batch_size)
+    validation_steps = math.ceil(validation_limit / batch_size)
+    class_weight = {
+        index: 0 * length_cs if index == 0 else 1 * length_cs
+        for index in range(len(vocab_cs))
+    }
+    history = model.fit_generator(
+        generator=training_data,
+        steps_per_epoch=steps_per_epoch,
+        epochs=epochs,
+        callbacks=get_callbacks(early_stopping=early_stopping),
+        validation_data=validation_data,
+        validation_steps=validation_steps,
+        class_weight=class_weight,
+        max_queue_size=queue_size,
+    )
+    model.summary()
+    return history
+
+
+def get_callbacks(early_stopping):
+    timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    latest_model = f'../models/{timestamp}-{{epoch:04d}}-latest'
+    best_model = f'../models/{timestamp}-{{epoch:04d}}-best'
+    log_dir = f'../logs/{timestamp}'
+    return [
+        callbacks.EarlyStopping(patience=early_stopping),
+        callbacks.ModelCheckpoint(filepath=latest_model),
+        callbacks.ModelCheckpoint(filepath=best_model, save_best_only=True),
+        callbacks.TensorBoard(log_dir=log_dir),
+    ]
+
+
+class MaskedAccuracy(SparseCategoricalAccuracy):
+
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        print(y_true, y_pred)
+        sample_weight = tf.where(y_true == 0, 0.0, 1.0)
+        super(MaskedAccuracy, self).update_state(
+            y_true=y_true,
+            y_pred=y_pred,
+            sample_weight=sample_weight,
+        )
+
+
+if __name__ == '__main__':
+    train()

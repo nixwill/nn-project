@@ -48,7 +48,7 @@ class EncoderDecoder(Model):
 class Encoder(layers.Bidirectional):
 
     def __init__(self, units):
-        cell = RNNCell(units=units)
+        cell = layers.LSTMCell(units=units)
         layer = layers.RNN(cell=cell)
         super(Encoder, self).__init__(layer=layer)
 
@@ -62,7 +62,7 @@ class Encoder(layers.Bidirectional):
 class Decoder(layers.Bidirectional):
 
     def __init__(self, units):
-        cell = RNNCell(units=units)
+        cell = layers.LSTMCell(units=units)
         layer = layers.RNN(cell=cell, return_sequences=True)
         super(Decoder, self).__init__(layer=layer)
 
