@@ -5,7 +5,7 @@
 
 1. [Project Proposal](#project-proposal)
 2. [Data Analysis](#data-analysis)
-3. [Architecture](#model-architecture)
+3. [Model Architecture](#model-architecture)
 4. [Training routine](#training-routine)
 
 
