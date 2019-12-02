@@ -24,6 +24,8 @@ def train(
         batch_size=32,
         epochs=1000,
         early_stopping=5,
+        save_models=True,
+        save_logs=True,
         queue_size=10,
 ):
     data_offset = data_offset if data_offset is not None else 0
@@ -79,46 +81,45 @@ def train(
     )
     steps_per_epoch = math.ceil(training_limit / batch_size)
     validation_steps = math.ceil(validation_limit / batch_size)
-    class_weight = {
-        index: 0 * length_cs if index == 0 else 1 * length_cs
-        for index in range(len(vocab_cs))
-    }
+    callback_list = get_callbacks(
+        early_stopping=early_stopping,
+        save_models=save_models,
+        save_logs=save_logs,
+    )
     history = model.fit_generator(
         generator=training_data,
         steps_per_epoch=steps_per_epoch,
         epochs=epochs,
-        callbacks=get_callbacks(early_stopping=early_stopping),
+        callbacks=callback_list,
         validation_data=validation_data,
         validation_steps=validation_steps,
-        class_weight=class_weight,
         max_queue_size=queue_size,
     )
     model.summary()
     return history
 
 
-def get_callbacks(early_stopping):
+def get_callbacks(early_stopping, save_models, save_logs):
     timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    latest_model = f'../models/{timestamp}-{{epoch:04d}}-latest'
-    best_model = f'../models/{timestamp}-{{epoch:04d}}-best'
-    log_dir = f'../logs/{timestamp}'
-    return [
-        callbacks.EarlyStopping(patience=early_stopping),
-        callbacks.ModelCheckpoint(filepath=latest_model),
-        callbacks.ModelCheckpoint(filepath=best_model, save_best_only=True),
-        callbacks.TensorBoard(log_dir=log_dir),
-    ]
-
-
-class MaskedAccuracy(SparseCategoricalAccuracy):
-
-    def update_state(self, y_true, y_pred, sample_weight=None):
-        sample_weight = tf.where(y_true == 0, 0.0, 1.0)
-        super(MaskedAccuracy, self).update_state(
-            y_true=y_true,
-            y_pred=y_pred,
-            sample_weight=sample_weight,
+    callback_list = []
+    if early_stopping is not None and early_stopping is not False:
+        callback = callbacks.EarlyStopping(patience=early_stopping)
+        callback_list.append(callback)
+    if save_models:
+        latest_callback = callbacks.ModelCheckpoint(
+            filepath=f'../models/{timestamp}-latest',
         )
+        best_callback = callbacks.ModelCheckpoint(
+            filepath=f'../models/{timestamp}-best',
+            save_best_only=True,
+        )
+        callback_list += [latest_callback, best_callback]
+    if save_logs:
+        callback = callbacks.TensorBoard(
+            log_dir=f'../logs/{timestamp}',
+        )
+        callback_list.append(callback)
+    return callback_list
 
 
 if __name__ == '__main__':
