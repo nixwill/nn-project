@@ -13,6 +13,7 @@ class EncoderDecoder(Model):
             output_length,
             output_vocab_size,
             output_embedding_size,
+            cell_type='lstm',
             enable_masking=False,
     ):
         super(EncoderDecoder, self).__init__()
@@ -24,10 +25,12 @@ class EncoderDecoder(Model):
         )
         self.encoder = Encoder(
             units=context_vector_size,
+            cell_type=cell_type,
         )
         self.repeater = layers.RepeatVector(output_length)
         self.decoder = Decoder(
             units=output_embedding_size,
+            cell_type=cell_type,
         )
         dense_layer = layers.Dense(
             units=output_vocab_size,
@@ -47,8 +50,8 @@ class EncoderDecoder(Model):
 
 class Encoder(layers.Bidirectional):
 
-    def __init__(self, units):
-        cell = layers.LSTMCell(units=units)
+    def __init__(self, units, cell_type):
+        cell = get_cell(cell_type=cell_type, units=units)
         layer = layers.RNN(cell=cell)
         super(Encoder, self).__init__(layer=layer)
 
@@ -61,8 +64,8 @@ class Encoder(layers.Bidirectional):
 
 class Decoder(layers.Bidirectional):
 
-    def __init__(self, units):
-        cell = layers.LSTMCell(units=units)
+    def __init__(self, units, cell_type):
+        cell = get_cell(cell_type=cell_type, units=units)
         layer = layers.RNN(cell=cell, return_sequences=True)
         super(Decoder, self).__init__(layer=layer)
 
@@ -132,3 +135,14 @@ class RNNCell(layers.Layer):
             units=self.units,
             activation=self.activation,
         )
+
+
+def get_cell(cell_type, units):
+    cell_type = cell_type.lower()
+    if cell_type == 'lstm':
+        return layers.LSTMCell(units=units)
+    if cell_type == 'gru':
+        return layers.GRUCell(units=units)
+    if cell_type == 'simple':
+        return RNNCell(units=units)
+    raise ValueError('Unknown RNN cell type')

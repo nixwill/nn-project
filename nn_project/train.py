@@ -16,6 +16,7 @@ def train(
         validation_split=0.2,
         vocab_size=None,
         padding='post',
+        cell_type='lstm',
         input_embedding_size=200,
         context_vector_size=2000,
         output_embedding_size=200,
@@ -68,6 +69,8 @@ def train(
         output_length=length_cs,
         output_vocab_size=len(vocab_cs),
         output_embedding_size=output_embedding_size,
+        cell_type=cell_type,
+        enable_masking=True,
     )
     model.compile(
         optimizer=Adam(learning_rate),
