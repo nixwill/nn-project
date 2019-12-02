@@ -105,14 +105,28 @@ def get_callbacks(early_stopping, save_models, save_logs):
         callback = callbacks.EarlyStopping(patience=early_stopping)
         callback_list.append(callback)
     if save_models:
-        latest_callback = callbacks.ModelCheckpoint(
+        latest = callbacks.ModelCheckpoint(
             filepath=f'../models/{timestamp}-latest',
         )
-        best_callback = callbacks.ModelCheckpoint(
-            filepath=f'../models/{timestamp}-best',
+        best_loss = callbacks.ModelCheckpoint(
+            filepath=f'../models/{timestamp}-best-loss',
+            monitor='val_loss',
             save_best_only=True,
+            mode='min',
         )
-        callback_list += [latest_callback, best_callback]
+        best_acc = callbacks.ModelCheckpoint(
+            filepath=f'../models/{timestamp}-best-acc',
+            monitor='val_accuracy',
+            save_best_only=True,
+            mode='max',
+        )
+        best_wer = callbacks.ModelCheckpoint(
+            filepath=f'../models/{timestamp}-best-wer',
+            monitor='val_word_error_rate',
+            save_best_only=True,
+            mode='min',
+        )
+        callback_list += [latest, best_loss, best_acc, best_wer]
     if save_logs:
         callback = callbacks.TensorBoard(
             log_dir=f'../logs/{timestamp}',
