@@ -3,10 +3,10 @@
 
 ## Table of contents
 
-0. [Project Proposal](#project-proposal)
-0. [Data Analysis](#data-analysis)
-0. [Architecture](#model-architecture)
-0. [Training routine](#training-routine)
+1. [Project Proposal](#project-proposal)
+2. [Data Analysis](#data-analysis)
+3. [Architecture](#model-architecture)
+4. [Training routine](#training-routine)
 
 
 ## Project Proposal
