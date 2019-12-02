@@ -57,7 +57,7 @@ def get_epochs(
             vocab=vocab_en,
         )
         samples_cs = get_samples(
-            data=data_en,
+            data=data_cs,
             limit=limit,
             offset=offset,
             vocab=vocab_cs,
@@ -126,7 +126,7 @@ def get_data(
                 vocab=vocab_en,
             )
             samples_cs = get_samples(
-                data=data_en,
+                data=data_cs,
                 limit=limit,
                 offset=offset,
                 vocab=vocab_cs,
@@ -138,7 +138,7 @@ def get_data(
                 offset=offset,
             )
             samples_cs = get_samples(
-                data=data_en,
+                data=data_cs,
                 limit=limit,
                 offset=offset,
             )
