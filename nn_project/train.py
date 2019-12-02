@@ -10,14 +10,14 @@ from nn_project.model import EncoderDecoder
 
 
 def train(
-        data_limit=None,
+        data_limit=500000,
         data_offset=None,
         validation_split=0.2,
-        vocab_size=None,
+        vocab_size=20000,
         padding='post',
         cell_type='lstm',
         input_embedding_size=200,
-        context_vector_size=2000,
+        context_vector_size=1024,
         output_embedding_size=200,
         learning_rate=0.001,
         batch_size=32,
