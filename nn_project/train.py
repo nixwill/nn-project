@@ -6,8 +6,7 @@ from tensorflow.keras import callbacks
 from tensorflow.keras.metrics import SparseCategoricalAccuracy
 from tensorflow.keras.optimizers import Adam
 
-from nn_project.data import (get_data_generator, get_lengths, get_vocabs,
-    MAX_ROWS_TRAIN)
+from nn_project.data import get_data_generator, get_vocabs, MAX_ROWS_TRAIN
 from nn_project.model import EncoderDecoder
 
 
@@ -29,16 +28,11 @@ def train(
     data_offset = data_offset if data_offset is not None else 0
     data_limit = data_limit if data_limit is not None else MAX_ROWS_TRAIN
     data_limit = min(data_limit, MAX_ROWS_TRAIN - data_offset)
-    vocab_en, vocab_cs = get_vocabs(
+    vocab_en, vocab_cs, length_en, length_cs = get_vocabs(
         kind='train',
         limit=data_limit,
         offset=data_offset,
         vocab_size=vocab_size,
-    )
-    length_en, length_cs = get_lengths(
-        kind='train',
-        limit=data_limit,
-        offset=data_offset,
     )
     training_offset = data_offset
     training_limit = int(data_limit * (1.0 - validation_split))
@@ -116,7 +110,6 @@ def get_callbacks(early_stopping):
 class MaskedAccuracy(SparseCategoricalAccuracy):
 
     def update_state(self, y_true, y_pred, sample_weight=None):
-        print(y_true, y_pred)
         sample_weight = tf.where(y_true == 0, 0.0, 1.0)
         super(MaskedAccuracy, self).update_state(
             y_true=y_true,

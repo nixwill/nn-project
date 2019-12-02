@@ -16,18 +16,12 @@ def get_data_generator(
         length_cs=None,
         padding='post',
 ):
-    if vocab_en is None or vocab_cs is None:
-        vocab_cs, vocab_en = get_vocabs(
+    if None in (vocab_en, vocab_cs, length_en, length_cs):
+        vocab_en, vocab_cs, length_en, length_cs = get_vocabs(
             kind=kind,
             limit=limit,
             offset=offset,
             vocab_size=vocab_size,
-        )
-    if length_en is None or length_cs is None:
-        length_en, length_cs = get_lengths(
-            kind=kind,
-            limit=limit,
-            offset=offset,
         )
     data_generator = get_epochs(
         kind=kind,
@@ -116,7 +110,7 @@ def get_data(
         encoded=False,
 ):
     if vocab_en is None or vocab_cs is None:
-        vocab_cs, vocab_en = get_vocabs(
+        vocab_en, vocab_cs, length_en, length_cs = get_vocabs(
             kind=kind,
             limit=limit,
             offset=offset,
@@ -156,28 +150,22 @@ def get_vocabs(kind, limit=None, offset=None, vocab_size=None):
     with data_en, data_cs:
         lines_en = get_lines(data=data_en, limit=limit, offset=offset)
         lines_cs = get_lines(data=data_cs, limit=limit, offset=offset)
-        vocab_en = make_vocab(lines=lines_en, size=vocab_size)
-        vocab_cs = make_vocab(lines=lines_cs, size=vocab_size)
-    return vocab_cs, vocab_en
+        vocab_en, length_en = make_vocab(lines=lines_en, size=vocab_size)
+        vocab_cs, length_cs = make_vocab(lines=lines_cs, size=vocab_size)
+    return vocab_en, vocab_cs, length_en, length_cs
 
 
 def make_vocab(lines, size=None):
-    words = [word for line in lines for word in line.split()]
-    counter = collections.Counter(words)
+    max_length = 0
+    counter = collections.Counter()
+    for line in lines:
+        words = line.split()
+        counter.update(words)
+        max_length = max(len(words), max_length)
     vocab = {'<?>': 0}
     for index, (word, _) in enumerate(counter.most_common(size), start=1):
         vocab[word] = index
-    return vocab
-
-
-def get_lengths(kind, limit=None, offset=None):
-    data_en, data_cs = get_files(kind=kind)
-    with data_en, data_cs:
-        lines_en = get_lines(data=data_en, limit=limit, offset=offset)
-        lines_cs = get_lines(data=data_cs, limit=limit, offset=offset)
-        length_en = max(len(line.split()) for line in lines_en)
-        length_cs = max(len(line.split()) for line in lines_cs)
-    return length_en, length_cs
+    return vocab, max_length
 
 
 def get_samples(data, limit=None, offset=None, vocab=None):
@@ -204,8 +192,7 @@ def get_files(kind):
 def get_lines(data, limit=None, offset=None):
     start = 0 if offset is None else offset
     stop = None if limit is None else start + limit
-    for line in itertools.islice(data, start, stop):
-        yield line.strip()
+    return itertools.islice(data, start, stop)
 
 
 MAX_ROWS_TRAIN = 15794564
