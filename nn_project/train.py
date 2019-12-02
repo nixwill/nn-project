@@ -1,12 +1,11 @@
 import datetime
 import math
 
-import tensorflow as tf
 from tensorflow.keras import callbacks
-from tensorflow.keras.metrics import SparseCategoricalAccuracy
 from tensorflow.keras.optimizers import Adam
 
 from nn_project.data import get_data_generator, get_vocabs, MAX_ROWS_TRAIN
+from nn_project.metrics import accuracy, word_error_rate
 from nn_project.model import EncoderDecoder
 
 
@@ -77,7 +76,7 @@ def train(
     model.compile(
         optimizer=Adam(learning_rate),
         loss='sparse_categorical_crossentropy',
-        metrics=[SparseCategoricalAccuracy(name='accuracy')],
+        metrics=[accuracy, word_error_rate],
     )
     steps_per_epoch = math.ceil(training_limit / batch_size)
     validation_steps = math.ceil(validation_limit / batch_size)
