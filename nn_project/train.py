@@ -10,17 +10,17 @@ from nn_project.model import EncoderDecoder
 
 
 def train(
-        data_limit=500000,
+        data_limit=None,
         data_offset=None,
         validation_split=0.2,
-        vocab_size=20000,
+        vocab_size=None,
         padding='post',
         cell_type='lstm',
-        input_embedding_size=200,
+        input_embedding_size=256,
         context_vector_size=1024,
-        output_embedding_size=200,
-        learning_rate=0.001,
-        batch_size=32,
+        output_embedding_size=256,
+        learning_rate=0.01,
+        batch_size=128,
         epochs=1000,
         early_stopping=5,
         save_models=True,
