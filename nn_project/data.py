@@ -3,6 +3,8 @@ import itertools
 
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
+from nn_project.utils import get_project_file
+
 
 def get_data_generator(
         kind='train',
@@ -184,8 +186,8 @@ def encode_sample(line, vocab=None):
 
 
 def get_files(kind):
-    data_en = open(f'../data/raw/{kind}.en.txt', 'r')
-    data_cs = open(f'../data/raw/{kind}.cs.txt', 'r')
+    data_en = open(get_project_file('data', 'raw', f'{kind}.en.txt'), 'r')
+    data_cs = open(get_project_file('data', 'raw', f'{kind}.cs.txt'), 'r')
     return data_en, data_cs
 
 

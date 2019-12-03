@@ -7,6 +7,7 @@ from tensorflow.keras.optimizers import Adam
 from nn_project.data import get_data_generator, get_vocabs, MAX_ROWS_TRAIN
 from nn_project.metrics import accuracy, word_error_rate
 from nn_project.model import EncoderDecoder
+from nn_project.utils import get_project_file
 
 
 def train(
@@ -110,26 +111,26 @@ def get_callbacks(early_stopping, save_models, save_logs, save_freq):
         callback_list.append(callback)
     if save_models:
         latest = callbacks.ModelCheckpoint(
-            filepath=f'../models/{timestamp}-latest',
+            filepath=get_project_file('models', f'{timestamp}-latest'),
             save_freq=save_freq,
         )
         latest_epoch = callbacks.ModelCheckpoint(
-            filepath=f'../models/{timestamp}-latest-epoch',
+            filepath=get_project_file('models', f'{timestamp}-latest-epoch'),
         )
         best_loss = callbacks.ModelCheckpoint(
-            filepath=f'../models/{timestamp}-best-loss',
+            filepath=get_project_file('models', f'{timestamp}-best-loss'),
             monitor='val_loss',
             save_best_only=True,
             mode='min',
         )
         best_acc = callbacks.ModelCheckpoint(
-            filepath=f'../models/{timestamp}-best-acc',
+            filepath=get_project_file('models', f'{timestamp}-best-acc'),
             monitor='val_accuracy',
             save_best_only=True,
             mode='max',
         )
         best_wer = callbacks.ModelCheckpoint(
-            filepath=f'../models/{timestamp}-best-wer',
+            filepath=get_project_file('models', f'{timestamp}-best-wer'),
             monitor='val_word_error_rate',
             save_best_only=True,
             mode='min',
@@ -137,7 +138,7 @@ def get_callbacks(early_stopping, save_models, save_logs, save_freq):
         callback_list += [latest, latest_epoch, best_loss, best_acc, best_wer]
     if save_logs:
         callback = callbacks.TensorBoard(
-            log_dir=f'../logs/{timestamp}',
+            log_dir=get_project_file('logs', f'{timestamp}'),
             update_freq=save_freq,
         )
         callback_list.append(callback)
