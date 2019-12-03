@@ -25,6 +25,7 @@ def train(
         early_stopping=5,
         save_models=True,
         save_logs=True,
+        save_freq=50,
         queue_size=10,
 ):
     data_offset = data_offset if data_offset is not None else 0
@@ -36,6 +37,8 @@ def train(
         offset=data_offset,
         vocab_size=vocab_size,
     )
+    print(f'Vocabulary size: {len(vocab_en)} -> {len(vocab_cs)}')
+    print(f'Sentence length: {length_en} -> {length_cs}')
     training_offset = data_offset
     training_limit = int(data_limit * (1.0 - validation_split))
     validation_offset = training_offset + training_limit
@@ -84,6 +87,7 @@ def train(
         early_stopping=early_stopping,
         save_models=save_models,
         save_logs=save_logs,
+        save_freq=save_freq*batch_size,
     )
     history = model.fit_generator(
         generator=training_data,
@@ -98,7 +102,7 @@ def train(
     return history
 
 
-def get_callbacks(early_stopping, save_models, save_logs):
+def get_callbacks(early_stopping, save_models, save_logs, save_freq):
     timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     callback_list = []
     if early_stopping is not None and early_stopping is not False:
@@ -107,6 +111,10 @@ def get_callbacks(early_stopping, save_models, save_logs):
     if save_models:
         latest = callbacks.ModelCheckpoint(
             filepath=f'../models/{timestamp}-latest',
+            save_freq=save_freq,
+        )
+        latest_epoch = callbacks.ModelCheckpoint(
+            filepath=f'../models/{timestamp}-latest-epoch',
         )
         best_loss = callbacks.ModelCheckpoint(
             filepath=f'../models/{timestamp}-best-loss',
@@ -126,10 +134,11 @@ def get_callbacks(early_stopping, save_models, save_logs):
             save_best_only=True,
             mode='min',
         )
-        callback_list += [latest, best_loss, best_acc, best_wer]
+        callback_list += [latest, latest_epoch, best_loss, best_acc, best_wer]
     if save_logs:
         callback = callbacks.TensorBoard(
             log_dir=f'../logs/{timestamp}',
+            update_freq=save_freq,
         )
         callback_list.append(callback)
     return callback_list

@@ -11,6 +11,7 @@
     "output_embedding_size": 256,
     "padding": "post",
     "queue_size": 10,
+    "save_freq": 50,
     "save_logs": true,
     "save_models": true,
     "validation_split": 0.2,
