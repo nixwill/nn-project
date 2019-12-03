@@ -31,11 +31,13 @@ args = parser.parse_args()
 
 if args.config is None:
     hyperparams = vars(args)
+    del hyperparams['config']
 else:
+    # TODO fix merging with cmd args
     with open(args.config) as i:
         hyperparams = json.load(i)
-    hyperparams.update(vars(args))
 
-del hyperparams['config']
+print('Hyperparameter settings:')
+print(json.dumps(hyperparams, indent=4, sort_keys=True))
 
 train(**hyperparams)
