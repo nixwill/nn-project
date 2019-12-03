@@ -4,14 +4,14 @@ cpu: setup download start-cpu
 
 # Start notebook server with GPU support
 start:
-	docker pull tensorflow/tensorflow:2.0.0-gpu-py3-jupyter
+	docker build ./docker/gpu/ -t analysis
 	docker run --rm --interactive --tty \
 		--gpus all \
 		--publish 127.0.0.1:8888:8888 \
 		--publish 127.0.0.1:6006:6006 \
 		--volume $(shell pwd)/:/tf/ \
 		--user $(shell id -u):$(shell id -g) \
-		tensorflow/tensorflow:2.0.0-gpu-py3-jupyter \
+		analysis:latest \
 		bash -c "source /etc/bash.bashrc \
 			&& jupyter notebook --no-browser --allow-root \
 				--notebook-dir=/tf \
@@ -21,13 +21,13 @@ start:
 
 # Start notebook server
 start-cpu:
-	docker pull tensorflow/tensorflow:2.0.0-py3-jupyter
+	docker build ./docker/cpu/ -t analysis-cpu
 	docker run --rm --interactive --tty \
 		--publish 127.0.0.1:8888:8888 \
 		--publish 127.0.0.1:6006:6006 \
 		--volume $(shell pwd)/:/tf/ \
 		--user $(shell id -u):$(shell id -g) \
-		tensorflow/tensorflow:2.0.0-py3-jupyter \
+		analysis-cpu:latest \
 		bash -c "source /etc/bash.bashrc \
 			&& jupyter notebook --no-browser --allow-root \
 				--notebook-dir=/tf \

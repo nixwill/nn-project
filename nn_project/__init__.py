@@ -1,3 +1,3 @@
-from . import data, model
+from . import data, metrics, model, train
 
-__all__ = ['data', 'model']
+__all__ = ['data', 'metrics', 'model', 'train']
