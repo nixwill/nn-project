@@ -26,7 +26,6 @@ parser.add_argument('-e', '--epochs', type=int, default=default['epochs'])
 parser.add_argument('--early_stopping', type=int, default=default['early_stopping'])
 parser.add_argument('--save_models', type=bool, default=default['save_models'])
 parser.add_argument('--save_logs', type=bool, default=default['save_logs'])
-parser.add_argument('--save_freq', type=int, default=default['save_freq'])
 parser.add_argument('--queue_size', type=int, default=default['queue_size'])
 args = parser.parse_args()
 
@@ -36,5 +35,7 @@ else:
     with open(args.config) as i:
         hyperparams = json.load(i)
     hyperparams.update(vars(args))
+
+del hyperparams['config']
 
 train(**hyperparams)
