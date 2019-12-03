@@ -1,8 +1,8 @@
 {
-    "batch_size": 128,
+    "batch_size": 64,
     "cell_type": "lstm",
     "context_vector_size": 1024,
-    "data_limit": null,
+    "data_limit": 100000,
     "data_offset": null,
     "early_stopping": 5,
     "epochs": 1000,
@@ -15,5 +15,5 @@
     "save_logs": true,
     "save_models": true,
     "validation_split": 0.2,
-    "vocab_size": null
+    "vocab_size": 10000
 }
