@@ -5,7 +5,10 @@ def accuracy(y_true, y_pred):
     y_pred = tf.cast(tf.argmax(y_pred, axis=-1), dtype=y_true.dtype)
     mask = tf.where(tf.logical_or(y_true != 0, y_pred != 0), 1.0, 0.0)
     correct = mask * tf.where(y_true == y_pred, 1.0, 0.0)
-    return tf.reduce_sum(correct, axis=-1) / tf.reduce_sum(mask, axis=-1)
+    return tf.math.divide_no_nan(
+        tf.reduce_sum(correct, axis=-1),
+        tf.reduce_sum(mask, axis=-1),
+    )
 
 
 def word_error_rate(y_true, y_pred):
