@@ -142,28 +142,40 @@ mean, that original corpus of dataset deals with the same topic.
 
 ### Vocabulary
 
+Before training, vocabularies are constructed for both languages. They are created as mappings from the string
+representation of each token to its ID which specifies the index of the one-hot component of the one-hot encoded vector.
+An optional vocabulary size limit can be passed, in which case the vocabularies are created from the most common words
+in the dataset.
+
+An additional 'zero' token is also added to both vocabularies, for use as a placeholder for words not present in
+the vocabulary and as padding value. Its ID is always equal to 0, so the rest of the tokens are indexed starting from 1.
+
 
 ### Padding
+
+At the time of vocabulary construction, the maximum number of words of sentences in the training set is calculated.
+This value is then used as the length to pad the sentences in the training set. The method of padding can be chosen
+in the training configuration, the default value being 'post', meaning null tokens are added to the end of the sample.
 
 
 ### Encoder-Decoder model
 
-As a solution for aur machine transation problem, we proposed encoder-decoder neural network architecture, which
+As a solution for our machine translation problem, we proposed encoder-decoder neural network architecture, which
 consists of two connected recurrent neural networks. This architecture excels at converting input sequences into
 output sequences. In out dataset the sentences in certain language represent input sequence for our model and output
 should be translated sentence, or at least it's representation. This task is more than fitting for encoder-decoder
 model.
 
-Our encoder-decoder model consists of 5 layers: Embedding (Dense), Encoder (RNN), Repeater, Decoder(RNN) and Dense.
+Our encoder-decoder model consists of 5 layers: Embedding (Dense), Encoder (RNN), Repeater, Decoder (RNN) and Dense.
 
 **Glossary:**
 
 * `batch size` - number of samples fed to model during one step of training
-* `sentence length` - maximal word count in one sentence in original dataset (number of sequence time steps)
+* `sentence length` - maximum word count in one sentence in original dataset (number of sequence time steps)
 * `embedding size` - size of vector representing one word
 * `context vector size` - size of thought vector representing meaning of sentence; equals to number of units in encoder
-* `translation length` - maximal word count in one sentence in translated dataset (number of sequence time steps); variable?
-* `decoder units count` - TODO
+* `translation length` - maximum word count in one sentence in translated dataset (number of sequence time steps)
+* `decoder units count` - size of vector being output by the decoder
 * `vocabulary size` - number of words contained in vocabulary
 
 
@@ -232,6 +244,21 @@ for classification to be accurate.
 **Input:** `[<batch size>, <translation length>, <decoder units count>]`
 
 **Output:** `[<batch size>, <translation length>, <vocabulary size>]`
+
+
+### Metrics
+
+We implemented two custom metrics for evaluating the performance of the model.
+
+The custom **accuracy** metric is calculated in a way, that ignores if the model got the padding correct and focuses only
+on the meaningful tokens. This is done by masking the vector of correctly classified tokens and only taking into account
+those, in which both tokens in both true and predicted vectors are non-zero. The resulting value is then calculated as
+the ratio between the number of correctly identified non-zero tokens to the amount of tokens, that are non-zero in both
+the true and predicted vector.
+
+The **word error rate** metric is defined as the Levenshtein distance between the true and predicted vectors, with the
+edits being measured at token level instead of being at character level. The value is normalized by the length of the
+true vector (which is to say, the number of non-zero tokens). 
 
 
 ## Training Routine
